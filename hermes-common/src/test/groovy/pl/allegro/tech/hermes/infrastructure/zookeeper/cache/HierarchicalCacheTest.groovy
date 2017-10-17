@@ -15,7 +15,8 @@ class HierarchicalCacheTest extends IntegrationTest implements AwaitilityTrait {
             Executors.newSingleThreadExecutor(),
             '/hierarchicalCacheTest',
             3,
-            ['groups', 'topics', 'subscriptions']
+            ['groups', 'topics', 'subscriptions'],
+            true
     )
 
     private Set calledCallbacks = [] as Set

@@ -32,14 +32,27 @@ public class HierarchicalCache {
 
     private HierarchicalCacheLevel rootCache;
 
+    private final boolean logEvents;
+
     public HierarchicalCache(CuratorFramework curatorFramework,
                              ExecutorService executorService,
                              String basePath,
                              int maxDepth,
-                             List<String> levelPrefixes) {
+                             List<String> levelPrefixes
+                             ) {
+        this(curatorFramework, executorService, basePath, maxDepth, levelPrefixes, false);
+    }
+
+    public HierarchicalCache(CuratorFramework curatorFramework,
+                             ExecutorService executorService,
+                             String basePath,
+                             int maxDepth,
+                             List<String> levelPrefixes,
+                             boolean logEvents) {
         this.curatorFramework = curatorFramework;
         this.executorService = executorService;
         this.basePath = basePath;
+        this.logEvents = logEvents;
         this.levelPrefixes.addAll(levelPrefixes);
         this.maxDepth = maxDepth;
 
@@ -68,7 +81,7 @@ public class HierarchicalCache {
                 path(depth, path),
                 depth,
                 levelCallbacks.get(depth),
-                Optional.ofNullable(function));
+                Optional.ofNullable(function), logEvents);
         try {
             levelCache.start();
         } catch (Exception e) {

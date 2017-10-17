@@ -52,7 +52,7 @@ public class MaxRateRegistry {
         ThreadFactory cacheThreadFactory = new ThreadFactoryBuilder().setNameFormat("max-rate-registry-%d").build();
         this.cache = new HierarchicalCache(curator,
                 Executors.newSingleThreadScheduledExecutor(cacheThreadFactory),
-                zookeeperPaths.consumersRateRuntimePath(), 3, Collections.emptyList()
+                zookeeperPaths.consumersRateRuntimePath(), 3, Collections.emptyList(), true
         );
 
         handleContentUpdates();
@@ -191,6 +191,8 @@ public class MaxRateRegistry {
             MaxRate maxRate = objectMapper.readValue(bytes, MaxRate.class);
             rateInfos.compute(consumer, (key, oldValue) -> oldValue == null ?
                     RateInfo.withNoHistory(maxRate) : oldValue.copyWithNewMaxRate(maxRate));
+            logger.info("Updated max-rate: [value={}, subscription={}, consumer={}]",
+                    maxRate.getMaxRate(), consumer.getSubscription(), consumer.getConsumerId());
         } catch (Exception e) {
             logger.warn("Problem updating max rate for consumer {}", consumer, e);
         }

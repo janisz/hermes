@@ -31,16 +31,20 @@ class HierarchicalCacheLevel extends PathChildrenCache implements PathChildrenCa
 
     private final Map<String, HierarchicalCacheLevel> subcacheMap = new HashMap<>();
 
+    private final boolean logEvents;
+
     HierarchicalCacheLevel(CuratorFramework curatorClient,
                            ExecutorService executorService,
                            String path,
                            int depth,
                            CacheListeners eventConsumer,
-                           Optional<BiFunction<Integer, String, HierarchicalCacheLevel>> nextLevelFactory) {
+                           Optional<BiFunction<Integer, String, HierarchicalCacheLevel>> nextLevelFactory,
+                           boolean logEvents) {
         super(curatorClient, path, true, false, executorService);
         this.currentDepth = depth;
         this.consumer = eventConsumer;
         this.nextLevelFactory = nextLevelFactory;
+        this.logEvents = logEvents;
         getListenable().addListener(this);
     }
 
@@ -52,7 +56,9 @@ class HierarchicalCacheLevel extends PathChildrenCache implements PathChildrenCa
 
         String path = event.getData().getPath();
         String cacheName = cacheNameFromPath(path);
-        logger.debug("Got {} event for path {}", event.getType(), path);
+        if (logEvents) {
+            logger.info("Got cache event: [path={}, type={}, thread={}]", path, event.getType(), Thread.currentThread().getName());
+        }
 
         switch (event.getType()) {
             case CHILD_ADDED:
